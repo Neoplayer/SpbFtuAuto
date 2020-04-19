@@ -1,0 +1,8 @@
+﻿@page "/Admin"
+@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using SpbFtuAuto.Data
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Панель администратора</h3>

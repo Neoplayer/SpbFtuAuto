@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SpbFtuAuto.Areas.Identity;
 using SpbFtuAuto.Data;
+using SpbFtuAuto.Services;
 
 namespace SpbFtuAuto
 {
@@ -34,12 +35,19 @@ namespace SpbFtuAuto
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddSingleton<WeatherForecastService>();
+            services
+               .AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>
+                >();
+
+            var MoodleService = new MoodleService();
+            MoodleService.AddTaskToQueue(MoodleService.TaskType.Online, true);
+            //MoodleService.Start();
+            services.AddSingleton(MoodleService);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
