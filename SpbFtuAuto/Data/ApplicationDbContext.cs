@@ -12,7 +12,6 @@ namespace SpbFtuAuto.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<Subject> Subjects { get; set; }
-        public DbSet<Time> Times { get; set; }
 
 
         public ApplicationDbContext() : base()

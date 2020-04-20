@@ -12,7 +12,18 @@ namespace SpbFtuAuto.Data.DataObjects
         public int GroupId { get; set; }
         public Group Group { get; set; }
 
+        public int SubjectId { get; set; }
         public Subject Subject { get; set; }
-        public Time Time { get; set; }
+        public DaysOfWeek DayOfWeek { get; set; }
+        public TimeSpan FromTimeOfDay { get; set; }
+        public TimeSpan ToTimeOfDay { get; set; }
+    }
+    public enum DaysOfWeek{
+        Понедельник,
+        Вторник,
+        Среда,
+        Черверг,
+        Пятница,
+        Суббота
     }
 }

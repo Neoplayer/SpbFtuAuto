@@ -1,0 +1,40 @@
+@page "/Dashboard"
+@using SpbFtuAuto.Data
+@using SpbFtuAuto.Data.DataObjects
+
+@inject ApplicationDbContext db
+
+
+<h3>Панель управления</h3>
+
+  <style>
+    .demo-mat-card {
+        max-width: 400px;
+    }
+
+    .demo-mat-card-content {
+        padding: 1rem;
+    }
+
+    .demo-mat-card-clean-margin {
+        margin: 0px;
+    }
+</style>
+<MatCard class="demo-mat-card">
+    <MatCardContent>
+        <div class="demo-mat-card-content">
+            <MatHeadline6 class="demo-mat-card-clean-margin">
+                Основные настройки
+            </MatHeadline6>
+        </div>
+        <MatBody2 class="demo-mat-card-content demo-mat-card-clean-margin">
+            <p>
+                <MatSlideToggle @bind-Value="@MyProperty"></MatSlideToggle>
+            </p>
+        </MatBody2>
+    </MatCardContent>
+</MatCard>
+
+@code{
+    public bool MyProperty { get; set; }
+}

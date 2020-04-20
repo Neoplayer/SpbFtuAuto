@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SpbFtuAuto.Migrations
 {
-    public partial class init : Migration
+    public partial class NewAge : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -45,22 +45,6 @@ namespace SpbFtuAuto.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Subjects", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Times",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    DayOfWeek = table.Column<int>(nullable: false),
-                    WeekType = table.Column<int>(nullable: false),
-                    From = table.Column<TimeSpan>(nullable: false),
-                    To = table.Column<TimeSpan>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Times", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -127,8 +111,10 @@ namespace SpbFtuAuto.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     GroupId = table.Column<int>(nullable: false),
-                    SubjectId = table.Column<int>(nullable: true),
-                    TimeId = table.Column<int>(nullable: true)
+                    SubjectId = table.Column<int>(nullable: false),
+                    DayOfWeek = table.Column<int>(nullable: false),
+                    FromTimeOfDay = table.Column<TimeSpan>(nullable: false),
+                    ToTimeOfDay = table.Column<TimeSpan>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -144,13 +130,7 @@ namespace SpbFtuAuto.Migrations
                         column: x => x.SubjectId,
                         principalTable: "Subjects",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Lessons_Times_TimeId",
-                        column: x => x.TimeId,
-                        principalTable: "Times",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -289,11 +269,6 @@ namespace SpbFtuAuto.Migrations
                 name: "IX_Lessons_SubjectId",
                 table: "Lessons",
                 column: "SubjectId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Lessons_TimeId",
-                table: "Lessons",
-                column: "TimeId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -324,9 +299,6 @@ namespace SpbFtuAuto.Migrations
 
             migrationBuilder.DropTable(
                 name: "Subjects");
-
-            migrationBuilder.DropTable(
-                name: "Times");
 
             migrationBuilder.DropTable(
                 name: "Groups");

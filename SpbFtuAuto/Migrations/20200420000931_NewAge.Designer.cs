@@ -9,8 +9,8 @@ using SpbFtuAuto.Data;
 namespace SpbFtuAuto.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200418235753_init")]
-    partial class init
+    [Migration("20200420000931_NewAge")]
+    partial class NewAge
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -170,22 +170,26 @@ namespace SpbFtuAuto.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<TimeSpan>("FromTimeOfDay")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("GroupId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SubjectId")
+                    b.Property<int>("SubjectId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeId")
-                        .HasColumnType("INTEGER");
+                    b.Property<TimeSpan>("ToTimeOfDay")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
                     b.HasIndex("SubjectId");
-
-                    b.HasIndex("TimeId");
 
                     b.ToTable("Lessons");
                 });
@@ -202,29 +206,6 @@ namespace SpbFtuAuto.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Subjects");
-                });
-
-            modelBuilder.Entity("SpbFtuAuto.Data.DataObjects.Time", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<TimeSpan>("From")
-                        .HasColumnType("TEXT");
-
-                    b.Property<TimeSpan>("To")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("WeekType")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Times");
                 });
 
             modelBuilder.Entity("SpbFtuAuto.Data.User", b =>
@@ -369,17 +350,15 @@ namespace SpbFtuAuto.Migrations
 
                     b.HasOne("SpbFtuAuto.Data.DataObjects.Subject", "Subject")
                         .WithMany("Lessons")
-                        .HasForeignKey("SubjectId");
-
-                    b.HasOne("SpbFtuAuto.Data.DataObjects.Time", "Time")
-                        .WithMany("Lessons")
-                        .HasForeignKey("TimeId");
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SpbFtuAuto.Data.User", b =>
                 {
                     b.HasOne("SpbFtuAuto.Data.DataObjects.Group", "Group")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

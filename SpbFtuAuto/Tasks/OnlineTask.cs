@@ -20,33 +20,24 @@ namespace SpbFtuAuto.Tasks
 
         public override void Execute()
         {
-            if (DateTime.Now > DateTime.Parse("1:00") && DateTime.Now < DateTime.Parse("21:00"))
+            foreach (var user in _db.Users.Where(x => x.IsActive == true && x.GroupId != 1 && (DateTime.Now - x.LastLogin).TotalSeconds < 900d))
             {
-                var users = _db.Users;
-                var time = (DateTime.Now - TimeSpan.FromSeconds(10));
-                foreach (User user in _db.Users.Where(x => x.FtuEmail != null && x.FtuPassword != null))
+                foreach (var lesson in user.Group.Lessons.Where(x => x.DayOfWeek == ConvertDayOfWeek(DateTime.Now.DayOfWeek) && DateTime.Now.TimeOfDay > x.FromTimeOfDay && DateTime.Now.TimeOfDay < x.ToTimeOfDay))
                 {
-                    if ((DateTime.Now - user.LastLogin).TotalSeconds < 900d)
-                        continue;
-
-
-                    foreach (var lesson in user.Group.Lessons.Where(x => x.Time.DayOfWeek == DateTime.Now.DayOfWeek))
+                    if(lesson.Group.Users.Contains(user))
                     {
-                        Logger.Log($"Ligging to {lesson.Subject.Name} from user {user.Email}");
                         if(!LogIn(user.FtuEmail, user.FtuPassword, lesson.Subject.Id))
                         {
                             return;
                         }
-                        Logger.Log($"Login complete");
-                        Thread.Sleep(TimeSpan.FromSeconds(15));
                     }
-                    user.LastLogin = DateTime.Now;
-                    _db.SaveChanges();
                 }
+                user.LastLogin = DateTime.Now;
+                _db.SaveChanges();
             }
         }
 
-        public bool LogIn(string Email, string Password, int CourseId)
+        private bool LogIn(string Email, string Password, int CourseId)
         {
             var browser = new Browser<ESteamRequestType>();
 
@@ -90,6 +81,26 @@ namespace SpbFtuAuto.Tasks
                 return true;
             else
                 return false;
+        }
+
+        private SpbFtuAuto.Data.DataObjects.DaysOfWeek ConvertDayOfWeek(DayOfWeek day)
+        {
+            switch(day)
+            {
+                case DayOfWeek.Monday:
+                    return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Понедельник;
+                case DayOfWeek.Tuesday:
+                    return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Вторник;
+                case DayOfWeek.Wednesday:
+                    return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Среда;
+                case DayOfWeek.Thursday:
+                    return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Черверг;
+                case DayOfWeek.Friday:
+                    return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Пятница;
+                case DayOfWeek.Saturday:
+                    return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Суббота;
+            }
+            return SpbFtuAuto.Data.DataObjects.DaysOfWeek.Понедельник;
         }
     }
 }

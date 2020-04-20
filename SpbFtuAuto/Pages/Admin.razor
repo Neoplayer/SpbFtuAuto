@@ -4,5 +4,86 @@
 @using Microsoft.AspNetCore.Identity;
 @using SpbFtuAuto.Data
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext db
+@inject IMatToaster Toaster
 
 <h3>Панель администратора</h3>
+
+<div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell">
+                    <MatButton OnClick="@(e => { dialogIsOpen = true; })">Создать предмет</MatButton>
+                    @if(subjectsTmp.Count() != 0)
+                    {
+                    <MatList>
+                        @foreach (var subject in subjectsTmp)
+                        {
+                            <MatListItem>id = @subject.Id  Name = @subject.Name</MatListItem><MatButton Icon="close" OnClick="@(() => Del(subject.Id))"></MatButton>
+                        }
+                    </MatList>
+                    }
+
+                    <MatDialog @bind-IsOpen="@dialogIsOpen">
+                        <MatDialogTitle>Создание предмета</MatDialogTitle>
+                        <MatDialogContent>
+                            <p>Id предмета</p>
+                            <MatTextField @bind-Value="@SubjectFieldId" Label="Id предмета"></MatTextField>
+                            <p>Название предмета</p>
+                            <MatTextField @bind-Value="@SubjectFieldName" Label="Название предмета"></MatTextField>
+                        </MatDialogContent>
+                        <MatDialogActions>
+                            <MatButton OnClick="@(e => { dialogIsOpen = false; })">Отмена</MatButton>
+                            <MatButton OnClick="@AddToDb">OK</MatButton>
+                        </MatDialogActions>
+                    </MatDialog>
+                </div>
+                <div class="mat-layout-grid-cell"></div>
+                <div class="mat-layout-grid-cell"></div>
+            </div>
+        </div>
+
+
+
+
+@code{
+    bool dialogIsOpen = false;
+    public List<Data.DataObjects.Subject> subjectsTmp = new List<Data.DataObjects.Subject>(); 
+    public int SubjectFieldId { get; set; }
+    public string SubjectFieldName { get; set; }
+
+    public void AddToDb()
+    {
+        if(SubjectFieldId != 0 && SubjectFieldName != "")
+        {
+            var t = new Data.DataObjects.Subject()
+            {
+                Id = SubjectFieldId,
+                Name = SubjectFieldName
+            };
+            subjectsTmp.Add(t);
+            db.Subjects.Add(t);
+            db.SaveChangesAsync();
+            SubjectFieldId = 0;
+            SubjectFieldName = "";
+        }
+        else
+        {
+            Toaster.Add("Не верно введены данные", MatToastType.Danger);
+        }
+    }
+
+    public void Del(int Id)
+    {
+        var subject = db.Subjects.FirstOrDefault(x => x.Id == Id);
+        db.Subjects.Remove(subject);
+        subjectsTmp.Remove(subject);
+        db.SaveChangesAsync();
+    }
+    
+
+
+    protected override void OnInitialized()
+    {
+        subjectsTmp = db.Subjects.ToList();
+    }
+}

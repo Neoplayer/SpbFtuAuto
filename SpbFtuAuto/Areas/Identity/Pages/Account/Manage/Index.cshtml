@@ -1,4 +1,5 @@
 ﻿@page
+@using MatBlazor
 @model IndexModel
 @{
     ViewData["Title"] = "Профиль";
@@ -20,6 +21,7 @@
                 <input asp-for="Input.SpbFtuEmail" class="form-control" />
                 <span asp-validation-for="Input.SpbFtuEmail" class="text-danger"></span>
             </div>
+            <MatButton Raised="true">Raised</MatButton>
             <div class="form-group">
                 <label asp-for="Input.SpbFtuPassword"></label>
                 <input asp-for="Input.SpbFtuPassword" class="form-control" />

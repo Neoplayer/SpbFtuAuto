@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using SpbFtuAuto.Areas.Identity;
 using SpbFtuAuto.Data;
 using SpbFtuAuto.Services;
+using MatBlazor;
 
 namespace SpbFtuAuto
 {
@@ -48,6 +49,16 @@ namespace SpbFtuAuto
             MoodleService.AddTaskToQueue(MoodleService.TaskType.Online, true);
             //MoodleService.Start();
             services.AddSingleton(MoodleService);
+
+            services.AddMatToaster(config =>
+                {
+                    config.Position = MatToastPosition.BottomRight;
+                    config.PreventDuplicates = true;
+                    config.NewestOnTop = true;
+                    config.ShowCloseButton = true;
+                    config.MaximumOpacity = 95;
+                    config.VisibleStateDuration = 3000;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

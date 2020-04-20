@@ -1,0 +1,146 @@
+﻿@page "/Groups"
+@using SpbFtuAuto.Data
+@using SpbFtuAuto.Data.DataObjects
+
+@inject IMatToaster Toaster
+@inject ApplicationDbContext db
+
+<h3>Группы</h3>
+
+<p>
+    <MatButton OnClick="@(e => { groupDialogIsOpen = true; })">Создать группу</MatButton>
+</p>
+
+<MatSelect Label="Номер группы" @bind-Value="@SelectedGroup">
+    <MatOptionString Value=""></MatOptionString>
+    @foreach (var item in Groups)
+    {
+        <MatOptionString Value="@item.Name">@item.Name</MatOptionString>
+    }
+</MatSelect>
+
+
+@if(SelectedGroup != "" && SelectedGroup != null)
+{
+    <MatButton OnClick="@(e => { lessonDialogIsOpen = true; })">Создать пару</MatButton>
+}
+@if(Lessons.Count() != 0)
+{
+    <MatList SingleSelection="true" TwoLine="true">
+        @foreach (var lesson in Lessons)
+        {
+            <MatListItem>
+                <MatListItemText>
+                    <MatListItemPrimaryText>@lesson.Subject.Name </MatListItemPrimaryText>
+                    <MatListItemSecondaryText>@lesson.DayOfWeek.ToString()  @lesson.FromTimeOfDay.ToString() - @lesson.ToTimeOfDay.ToString()</MatListItemSecondaryText>
+                </MatListItemText>
+            </MatListItem>
+        }
+    </MatList>
+}
+
+
+
+<MatDialog @bind-IsOpen="@groupDialogIsOpen">
+    <MatDialogTitle>Создание группы</MatDialogTitle>
+    <MatDialogContent>
+        <p>Номер группы</p>
+        <MatTextField @bind-Value="@GroupNumberTmp" Label="Номер"></MatTextField>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="@(e => { groupDialogIsOpen = false; })">Отмена</MatButton>
+        <MatButton OnClick="@AddGroupToDb">OK</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+<MatDialog @bind-IsOpen="@lessonDialogIsOpen">
+    <MatDialogTitle>Создание пары</MatDialogTitle>
+    <MatDialogContent>
+        <p>Название предмета</p>
+        <MatSelect Label="Предмет" @bind-Value="@SelectedSubjectTmp">
+            <MatOptionString Value=""></MatOptionString>
+            @foreach (var item in db.Subjects.ToList())
+            {
+                <MatOptionString Value="@item.Name">@item.Name</MatOptionString>
+            }
+        </MatSelect>
+        <p>День недели</p>
+        <MatSelectItem @bind-Value="@SelectedDayOfWeekTmp" Items="@Enum.GetNames(typeof(DaysOfWeek))"></MatSelectItem>
+        <p>Время</p>
+        <MatSelectItem @bind-Value="@SelectedTimeTmp" Items="@times"></MatSelectItem>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="@(e => { lessonDialogIsOpen = false; })">Отмена</MatButton>
+        <MatButton OnClick="@AddLessonToDb">OK</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+
+@code{
+    List<Group> Groups = new List<Group>();
+    List<Lesson> Lessons = new List<Lesson>();
+    string[] times = { "9:15-10:50", "11:10-12:45", "13:30-15:05", "15:15-16:50" }; 
+    
+    bool groupDialogIsOpen = false;
+    bool lessonDialogIsOpen = false;
+    
+    public string GroupNumberTmp { get; set; }
+
+    public string SelectedSubjectTmp { get; set; }
+    public string SelectedDayOfWeekTmp { get; set; }
+    public string SelectedTimeTmp { get; set; }
+
+    private string selectedGroup;
+    public string SelectedGroup 
+    { 
+        get 
+        {return selectedGroup;} 
+        set
+        {
+            selectedGroup = value;
+            Lessons = db.Lessons.Where(x => x.Group.Name == SelectedGroup).ToList();
+        } 
+    }
+
+    public void AddGroupToDb()
+    {
+        if(GroupNumberTmp == "")
+        {
+           Toaster.Add("Вы не ввели номер группы!", MatToastType.Danger);
+           return;
+        }
+        if(db.Groups.FirstOrDefault(x => x.Name == GroupNumberTmp) != null)
+        {
+           Toaster.Add("Такая группа уже существует!", MatToastType.Danger);
+           return;
+        }
+        Group g = new Group()
+        {
+            Name = GroupNumberTmp
+        };
+        Groups.Add(g);
+        db.Groups.Add(g);
+        groupDialogIsOpen = false;
+        db.SaveChangesAsync();
+    }
+    public void AddLessonToDb()
+    {
+        Lesson lesson = new Lesson()
+        {
+            GroupId = db.Groups.FirstOrDefault(x => x.Name == SelectedGroup).Id,
+            SubjectId = db.Subjects.FirstOrDefault(x => x.Name == SelectedSubjectTmp).Id,
+            DayOfWeek = (DaysOfWeek)Enum.Parse(typeof(DaysOfWeek),SelectedDayOfWeekTmp),
+            FromTimeOfDay = TimeSpan.Parse(SelectedTimeTmp.Split('-')[0]),
+            ToTimeOfDay = TimeSpan.Parse(SelectedTimeTmp.Split('-')[1])
+        };
+        Lessons.Add(lesson);
+        db.Lessons.Add(lesson);
+        db.SaveChangesAsync();
+        lessonDialogIsOpen = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        Groups = db.Groups.ToList();
+    }
+}
